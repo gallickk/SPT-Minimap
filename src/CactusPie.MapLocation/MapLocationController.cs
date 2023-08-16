@@ -15,13 +15,15 @@ namespace CactusPie.MapLocation
         public void Start()
         {
             var gamePlayerOwner = GetLocalPlayerFromWorld().GetComponentInChildren<GamePlayerOwner>();
+            GameWorld _gameWorld = GetGameWorld();
+
             MapLocationPlugin.RefreshIntervalMillieconds.SettingChanged += RefreshIntervalSecondsOnSettingChanged;
             
             if (_mapLocationBroadcastService == null)
             {
                 IPAddress ipAddress = IPAddress.Parse(MapLocationPlugin.DestinationIpAddress.Value);
                 var destinationEndpoint = new IPEndPoint(ipAddress, MapLocationPlugin.DestinationPort.Value);
-                _mapLocationBroadcastService = new MapLocationBroadcastService(gamePlayerOwner, destinationEndpoint);
+                _mapLocationBroadcastService = new MapLocationBroadcastService(gamePlayerOwner, _gameWorld, destinationEndpoint);
             }
 
             _mapLocationBroadcastService.StartBroadcastingPosition(MapLocationPlugin.RefreshIntervalMillieconds.Value);
@@ -47,6 +49,17 @@ namespace CactusPie.MapLocation
             }
 
             return gameWorld.MainPlayer;
+        }
+
+        private GameWorld GetGameWorld()
+        {
+            GameWorld gameWorld = Singleton<GameWorld>.Instance;
+            if (gameWorld == null || gameWorld.MainPlayer == null)
+            {
+                return null;
+            }
+
+            return gameWorld;
         }
 
         [UsedImplicitly]
